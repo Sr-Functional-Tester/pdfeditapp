@@ -1,5 +1,6 @@
 package com.automation.framework.PDF;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.itextpdf.io.image.ImageData;
@@ -13,11 +14,35 @@ import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
 
 public class PDFAddImageWaterMark {
 
-	public static void addImageBackground(String pdfInputPath, String pdfOutputPath, String imagePath) throws IOException {
+	public static void addImageBackground(String inputString) throws IOException {
+		String str[] = inputString.split(",");
+		String sourcePdfPath = str[0].trim();
+		String imagePath = str[1].trim();
+		//System.out.println(sourcePdfPath+"-"+imagePath);
+		File sourceFile = new File(sourcePdfPath);
+		if (!sourceFile.exists()) {
+            throw new IOException("Source PDF file does not exist: " + sourcePdfPath);
+        }
+
+        // Check if the file is a valid PDF
+        try {
+            // Try to open the file using PdfReader to validate the PDF format
+            PdfReader reader = new PdfReader(sourcePdfPath);
+            reader.close();  // If this succeeds, it's a valid PDF
+        } catch (IOException e) {
+            throw new IOException("Invalid PDF file: " + sourcePdfPath, e);
+        }
+
+        // Extract the directory and file name from sourcePdfPath
+        String directoryPath = sourceFile.getParent(); // Get directory of the source PDF
+        String fileNameWithoutExtension = sourceFile.getName().substring(0, sourceFile.getName().lastIndexOf('.')); // Get the file name without extension
+
+        // Step 2: Generate the destination path with "_output" suffix
+        String destPdfPath = directoryPath + File.separator + fileNameWithoutExtension + "_output.pdf";
 
 	    // Step 1: Open existing PDF document
-	    PdfReader reader = new PdfReader(pdfInputPath);
-	    PdfWriter writer = new PdfWriter(pdfOutputPath);
+	    PdfReader reader = new PdfReader(sourcePdfPath);
+	    PdfWriter writer = new PdfWriter(destPdfPath);
 	    PdfDocument pdfDocument = new PdfDocument(reader, writer);
 
 	    // Step 2: Load the image (This will be used as a background logo)
@@ -56,17 +81,17 @@ public class PDFAddImageWaterMark {
 	}
 
 
-    public static void main(String[] args) {
-        try {
-            String sourcePdfPath = "C:\\Users\\srinu13587\\Documents\\225669.pdf";  // Path to the source PDF
-            String destPdfPath = "C:\\Users\\srinu13587\\Documents\\modified_225669.pdf";  // Output path for the modified PDF
-            String imagePath = "C:\\Users\\srinu13587\\Documents\\image.png";  // Path to the background image
-
-            addImageBackground(sourcePdfPath, destPdfPath, imagePath);
-
-            System.out.println("Logo background added successfully.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void main(String[] args) {
+//        try {
+//            String sourcePdfPath = "C:\\Users\\srinu13587\\Documents\\225669.pdf";  // Path to the source PDF
+//            String destPdfPath = "C:\\Users\\srinu13587\\Documents\\modified_225669.pdf";  // Output path for the modified PDF
+//            String imagePath = "C:\\Users\\srinu13587\\Documents\\image.png";  // Path to the background image
+//
+//            addImageBackground(sourcePdfPath, imagePath);
+//
+//            System.out.println("Logo background added successfully.");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

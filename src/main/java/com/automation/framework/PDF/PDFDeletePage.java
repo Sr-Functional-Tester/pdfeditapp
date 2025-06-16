@@ -1,17 +1,44 @@
 package com.automation.framework.PDF;
 
-import com.itextpdf.kernel.pdf.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
 
 public class PDFDeletePage {
 
     // Method to delete pages based on a list of page numbers
-    public static void deletePdfPages(String inputPdf, String outputPdf, List<Integer> pagesToDelete) {
-        try {
+    public static void deletePdfPages(File sourcePdfPath, List<Integer> pagesToDelete ) throws Exception { 	
+        try {      	
+            File sourceFile = sourcePdfPath;
+            if (!sourceFile.exists()) {
+                throw new IOException("Source PDF file does not exist: " + sourcePdfPath);
+            }
+
+            // Check if the file is a valid PDF
+            try {
+                // Try to open the file using PdfReader to validate the PDF format
+                PdfReader reader = new PdfReader(sourcePdfPath);
+                reader.close();  // If this succeeds, it's a valid PDF
+            } catch (IOException e) {
+                throw new IOException("Invalid PDF file: " + sourcePdfPath, e);
+            }
+
+            // Extract the directory and file name from sourcePdfPath
+            String directoryPath = sourceFile.getParent(); // Get directory of the source PDF
+            String fileNameWithoutExtension = sourceFile.getName().substring(0, sourceFile.getName().lastIndexOf('.')); // Get the file name without extension
+
+            // Step 2: Generate the destination path with "_output" suffix
+            String destPdfPath = directoryPath + File.separator + fileNameWithoutExtension + "_output.pdf";
+            
             // Open the original PDF using PdfReader (read-only mode)
-            PdfReader reader = new PdfReader(inputPdf);
+            PdfReader reader = new PdfReader(sourcePdfPath);
             // Create a PdfWriter for the new output PDF (write-only mode)
-            PdfWriter writer = new PdfWriter(outputPdf);
+            PdfWriter writer = new PdfWriter(destPdfPath);
 
             // Create a PdfDocument object for the source PDF (input)
             PdfDocument pdfDocument = new PdfDocument(reader);
@@ -35,17 +62,37 @@ public class PDFDeletePage {
 
             System.out.println("Pages " + pagesToDelete + " deleted successfully.");
         } catch (Exception e) {
-            e.printStackTrace();
+        	throw new Exception("error", e);
         }
     }
 
     // Method to delete pages from a range (inclusive)
-    public static void deletePagesInRange(String inputPdf, String outputPdf, int startPage, int endPage) {
+    public static void deletePagesInRange(String inputPdf, int startPage, int endPage) {
         try {
+        	 File sourceFile = new File(inputPdf);
+             if (!sourceFile.exists()) {
+                 throw new IOException("Source PDF file does not exist: " + inputPdf);
+             }
+
+             // Check if the file is a valid PDF
+             try {
+                 // Try to open the file using PdfReader to validate the PDF format
+                 PdfReader reader = new PdfReader(inputPdf);
+                 reader.close();  // If this succeeds, it's a valid PDF
+             } catch (IOException e) {
+                 throw new IOException("Invalid PDF file: " + inputPdf, e);
+             }
+
+             // Extract the directory and file name from sourcePdfPath
+             String directoryPath = sourceFile.getParent(); // Get directory of the source PDF
+             String fileNameWithoutExtension = sourceFile.getName().substring(0, sourceFile.getName().lastIndexOf('.')); // Get the file name without extension
+
+             // Step 2: Generate the destination path with "_output" suffix
+             String destPdfPath = directoryPath + File.separator + fileNameWithoutExtension + "_output.pdf";
             // Open the original PDF using PdfReader (read-only mode)
             PdfReader reader = new PdfReader(inputPdf);
             // Create a PdfWriter for the new output PDF (write-only mode)
-            PdfWriter writer = new PdfWriter(outputPdf);
+            PdfWriter writer = new PdfWriter(destPdfPath);
 
             // Create a PdfDocument object for the source PDF (input)
             PdfDocument pdfDocument = new PdfDocument(reader);
@@ -73,15 +120,16 @@ public class PDFDeletePage {
         }
     }
 
-    public static void main(String[] args) {
-        // Input and output PDF file paths
-        String sourcePdfPath = "C:\\Users\\srinu13587\\Documents\\Computer_Applications_Sec_2024-25.pdf";
-        String destPdfPath = "C:\\Users\\srinu13587\\Documents\\modified_test.pdf";
-        
-        // Delete specific pages (e.g., delete pages 2, 4, 6)
-        deletePdfPages(sourcePdfPath, destPdfPath, List.of(2));
+	public static void deletePage(String sourcePdfPath) throws Exception {
+		String str[] = sourcePdfPath.split(",");
 
-        // OR delete pages in a range (e.g., delete pages from 2 to 6)
-         deletePagesInRange(sourcePdfPath, destPdfPath, 2, 6);
-    }
+		if (str[0] != null && str[0].contains("-")) {
+			String pages[] = str[0].trim().split("-");
+			deletePagesInRange(sourcePdfPath, Integer.parseInt(pages[0]), Integer.parseInt(pages[1]));
+		} else {
+			List<Integer> pagesToDelete = Arrays.asList(Integer.parseInt(str[0].trim()));
+			File sourceFile = new File(str[0].trim());
+			deletePdfPages(sourceFile, pagesToDelete);
+		}
+	}
 }

@@ -1,5 +1,7 @@
 package com.automation.framework.PDF;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 import com.itextpdf.kernel.colors.ColorConstants;
@@ -19,9 +21,40 @@ import com.itextpdf.pdfcleanup.autosweep.RegexBasedCleanupStrategy;
 
 public class PDFReplaceText {
 
-    public static void changePdf(int pageNo, int fontSizen, String findText, String replaceText) throws Exception {
-        PdfReader reader = new PdfReader("C:\\Users\\srinu13587\\Documents\\225669.pdf");
-        PdfWriter writer = new PdfWriter("C:\\Users\\srinu13587\\Documents\\modified_225669.pdf");
+    public static void changePdf(String inputString) throws Exception {
+    	 // Check if the source file exists
+    	//int pageNo, int fontSizen, String findText, String replaceText, String sourcePdfPath
+    	String str[] = inputString.split(",");
+    	int pageNo = Integer.parseInt(str[0].trim());
+    	int fontSizen = Integer.parseInt(str[1].trim());
+    	String findText = str[2].trim();
+    	String replaceText = str[3].trim();	
+    	String sourcePdfPath = str[4].trim();
+        File sourceFile = new File(sourcePdfPath);
+        
+        System.out.println(pageNo+"-"+fontSizen+"-"+findText+"-"+replaceText+"-"+sourcePdfPath);
+        if (!sourceFile.exists()) {
+            throw new IOException("Source PDF file does not exist: " + sourcePdfPath);
+        }
+
+        // Check if the file is a valid PDF
+        try {
+            // Try to open the file using PdfReader to validate the PDF format
+            PdfReader reader = new PdfReader(sourcePdfPath);
+            reader.close();  // If this succeeds, it's a valid PDF
+        } catch (IOException e) {
+            throw new IOException("Invalid PDF file: " + sourcePdfPath, e);
+        }
+
+        // Extract the directory and file name from sourcePdfPath
+        String directoryPath = sourceFile.getParent(); // Get directory of the source PDF
+        String fileNameWithoutExtension = sourceFile.getName().substring(0, sourceFile.getName().lastIndexOf('.')); // Get the file name without extension
+
+        // Step 2: Generate the destination path with "_output" suffix
+        String destPdfPath = directoryPath + File.separator + fileNameWithoutExtension + "_output.pdf";
+        
+        PdfReader reader = new PdfReader(sourcePdfPath);
+        PdfWriter writer = new PdfWriter(destPdfPath);
         PdfDocument pdfDocument = new PdfDocument(reader, writer);
 
         int numberOfPages = pdfDocument.getNumberOfPages();
@@ -101,7 +134,7 @@ public class PDFReplaceText {
         System.out.println("done");
     }
     
-    public static void main(String[] args) throws Exception {
-    	PDFReplaceText.changePdf(2, 11, "Medium Enterprises Development Act,","Large Size Enterprises Development Act,");
-    }
+//    public static void main(String[] args) throws Exception {
+//    	//PDFReplaceText.changePdf(2, 11, "Medium","Large", "/mnt/abc.pdf");
+//    }
 }
