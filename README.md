@@ -1,5 +1,5 @@
-PDF Edit App is useful when you want to edit PDF file. It is java application where you can simply edit any PDF file like   
-  merge pdf files,
+PDF Edit App is useful when you want to edit PDF file. It is java application where you can simply edit any PDF file like <br>  
+merge pdf files <br>
 modifying the content of pdf file,
 add annotations to pdf file
 insert water mark image
